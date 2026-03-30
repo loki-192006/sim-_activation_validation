@@ -1,0 +1,248 @@
+{
+  "info": {
+    "name": "SIM Activation Portal API",
+    "description": "Complete Postman collection for testing all endpoints of the SIM Activation Portal.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/api/v1" }
+  ],
+  "item": [
+
+    {
+      "name": "1. Customer Module",
+      "item": [
+
+        {
+          "name": "Register Customer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/customers/register" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Raj\",\n  \"lastName\": \"Patel\",\n  \"email\": \"raj.patel@example.com\",\n  \"dob\": \"1995-06-15\",\n  \"address\": \"123 MG Road, Surat, Gujarat 395001\",\n  \"phoneNumber\": \"9876543210\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Register Customer (duplicate — should fail 409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/customers/register" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Raj\",\n  \"lastName\": \"Patel\",\n  \"email\": \"raj.patel@example.com\",\n  \"dob\": \"1995-06-15\",\n  \"address\": \"123 MG Road, Surat, Gujarat 395001\",\n  \"phoneNumber\": \"9876543210\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Register Customer (validation error — should fail 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/customers/register" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"R\",\n  \"email\": \"not-an-email\",\n  \"dob\": \"2099-01-01\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Validate Customer (success)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/customers/validate" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"raj.patel@example.com\",\n  \"dob\": \"1995-06-15\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Validate Customer (wrong DOB — should fail 401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/customers/validate" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"raj.patel@example.com\",\n  \"dob\": \"2000-01-01\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Get Customer by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/customers/1" }
+          }
+        },
+
+        {
+          "name": "Get Customer by ID (not found — should fail 404)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/customers/9999" }
+          }
+        },
+
+        {
+          "name": "Update Address",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/customers/address" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": 1,\n  \"newAddress\": \"456 Ring Road, Surat, Gujarat 395007\"\n}"
+            }
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "2. SIM Module",
+      "item": [
+
+        {
+          "name": "Validate SIM (INACTIVE — ready for activation)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/sim/validate?simIccid=8991101200003204510&mobileNumber=9876543210",
+              "query": [
+                { "key": "simIccid",      "value": "8991101200003204510" },
+                { "key": "mobileNumber",  "value": "9876543210" }
+              ]
+            }
+          }
+        },
+
+        {
+          "name": "Validate SIM (ACTIVE — not eligible)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/sim/validate?simIccid=8991101200003204513&mobileNumber=9876543213",
+              "query": [
+                { "key": "simIccid",     "value": "8991101200003204513" },
+                { "key": "mobileNumber", "value": "9876543213" }
+              ]
+            }
+          }
+        },
+
+        {
+          "name": "Validate SIM (wrong combination — should fail 404)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/sim/validate?simIccid=0000000000000000000&mobileNumber=9999999999",
+              "query": [
+                { "key": "simIccid",     "value": "0000000000000000000" },
+                { "key": "mobileNumber", "value": "9999999999" }
+              ]
+            }
+          }
+        },
+
+        {
+          "name": "Get SIM by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/sim/1" }
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "3. Activation Module",
+      "item": [
+
+        {
+          "name": "Start Activation (success)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/activation/start" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": 1,\n  \"simIccid\": \"8991101200003204510\",\n  \"mobileNumber\": \"9876543210\",\n  \"planSelected\": \"Starter Pack\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Start Activation (SIM already active — should fail 422)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/activation/start" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": 1,\n  \"simIccid\": \"8991101200003204513\",\n  \"mobileNumber\": \"9876543213\",\n  \"planSelected\": \"Starter Pack\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Start Activation (customer not found — should fail 404)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/activation/start" },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": 9999,\n  \"simIccid\": \"8991101200003204510\",\n  \"mobileNumber\": \"9876543210\"\n}"
+            }
+          }
+        },
+
+        {
+          "name": "Get Activations by Customer",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/activation/customer/1" }
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "4. Offers Module",
+      "item": [
+
+        {
+          "name": "Get Offers for Customer",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/offers/1" }
+          }
+        },
+
+        {
+          "name": "Get All Active Offers",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/offers" }
+          }
+        }
+
+      ]
+    }
+
+  ]
+}
